@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>跨越星辰遇见你</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            /* 更具深邃感的深蓝黑色背景 */
+            background: radial-gradient(circle at center, #1a0b1e 0%, #050505 100%);
+            font-family: 'STKaiti', 'KaiTi', serif;
+        }
+
+        #letter {
+            position: absolute;
+            top: 55%; 
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            width: 85%;
+            z-index: 100;
+            color: #fff;
+            pointer-events: none;
+        }
+
+        .text-line {
+            font-size: 1.5rem;
+            margin: 18px 0;
+            min-height: 1.6em;
+            /* 现代霓虹发光效果 */
+            text-shadow: 0 0 10px rgba(255, 77, 109, 1), 0 0 20px rgba(255, 122, 142, 0.6);
+            opacity: 0;
+            transition: opacity 1.2s ease-in-out;
+        }
+
+        /* 核心修改：SVG 爱心样式 */
+        .heart-svg {
+            position: absolute;
+            width: 15px; /* 稍微调大一点，突出SVG形状 */
+            height: 15px;
+            fill: none; /* 不填充，只留边框 */
+            stroke-width: 2; /* 边框粗细 */
+            /* 现代霓虹发光滤镜 */
+            filter: drop-shadow(0 0 4px #ff4d6d) drop-shadow(0 0 8px #ff758f);
+            transition: all 2.5s cubic-bezier(0.5, 0, 0.3, 1);
+        }
+
+        /* 飞舞小爱心的专属动画 */
+        @keyframes floatSVGHeart {
+            0% {
+                transform: translate(0, 0) scale(0.3) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.8;
+            }
+            90% {
+                opacity: 0.5;
+            }
+            100% {
+                /* 随机飞行轨迹 */
+                transform: translate(var(--dx), var(--dy)) scale(0.7) rotate(var(--dr));
+                opacity: 0;
+            }
+        }
+
+        #title {
+            font-size: 2.8rem;
+            color: #ffb3c1;
+            margin-bottom: 35px;
+            opacity: 0;
+            transition: opacity 2s;
+            text-shadow: 0 0 15px rgba(255, 179, 193, 1);
+        }
+
+        /* 定义一个 SVG 模板，在 JS 中复用 */
+        #svg-template {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <svg id="svg-template" viewBox="0 0 100 100">
+        <path d="M50 88.9L16.7 55.6C7.2 46.1 7.2 30.7 16.7 21.2C26.2 11.7 41.6 11.7 51.1 21.2L50 22.3L48.9 21.2C58.4 11.7 73.8 11.7 83.3 21.2C92.8 30.7 92.8 46.1 83.3 55.6L50 88.9Z" />
+    </svg>
+
+    <div id="letter">
+        <h1 id="title">致：心里的那个你</h1>
+        <div id="typing-area"></div>
+    </div>
+
+    <script>
+        const heartCount = 200; // 再次增加数量，SVG爱心更精致
+        const hearts = [];
+        // 更具现代感的配色：从深粉到亮粉
+        const colors = ['#ff4d6d', '#ff758f', '#ff8fa3', '#ffb3c1', '#ffffff', '#ff1493'];
+        const centerX = window.innerWidth / 2;
+        const centerY = window.innerHeight / 2;
+
+        const messages = [
+            "所有的星光，最终都会汇聚成你的模样。",
+            "我从遥远的地方走来，",
+            "穿过拥挤的人潮，翻过时间的山海，",
+            "只为了在这一刻，把满腔的欢喜告诉你。",
+            "你是我漫长岁月里，最温柔的奇迹。"
+        ];
+
+        function getRandomColor() {
+            return colors[Math.floor(Math.random() * colors.length)];
+        }
+
+        // --- 核心修改：使用 SVG 模板创建爱心 ---
+        function createSVGHeartElement() {
+            const svgNS = "http://www.w3.org/2000/svg";
+            const newSvg = document.createElementNS(svgNS, "svg");
+            const templatePath = document.querySelector('#svg-template path');
+            
+            newSvg.setAttribute("viewBox", "0 0 100 100");
+            newSvg.setAttribute("class", "heart-svg");
+            
+            const newPath = document.createElementNS(svgNS, "path");
+            newPath.setAttribute("d", templatePath.getAttribute("d"));
+            
+            newSvg.appendChild(newPath);
+            return newSvg;
+        }
+
+        // 1. 初始化主体爱心
+        for (let i = 0; i < heartCount; i++) {
+            const heartSvg = createSVGHeartElement();
+            heartSvg.setAttribute("stroke", getRandomColor()); // 设置边框颜色
+            
+            // 初始在中心
+            heartSvg.style.left = centerX + 'px';
+            heartSvg.style.top = centerY + 'px';
+            heartSvg.style.opacity = '0';
+            
+            document.body.appendChild(heartSvg);
+            hearts.push({
+                el: heartSvg,
+                randomX: Math.random() * window.innerWidth,
+                randomY: Math.random() * window.innerHeight,
+                scale: Math.random() * 0.7 + 0.5
+            });
+        }
+
+        // 2. 生成飞舞小爱心的函数 (也改为SVG)
+        function createFloatingSVGHeart() {
+            const fHeartSvg = createSVGHeartElement();
+            fHeartSvg.classList.add('floating-heart');
+            fHeartSvg.setAttribute("stroke", getRandomColor());
+            
+            fHeartSvg.style.left = Math.random() * window.innerWidth + 'px';
+            fHeartSvg.style.top = Math.random() * window.innerHeight + 'px';
+            
+            // 随机飛行和旋轉
+            fHeartSvg.style.setProperty('--dx', (Math.random() - 0.5) * 400 + 'px');
+            fHeartSvg.style.setProperty('--dy', (Math.random() - 0.5) * 400 + 'px');
+            fHeartSvg.style.setProperty('--dr', (Math.random() - 0.5) * 360 + 'deg'); // 增加旋转
+            
+            fHeartSvg.style.animation = `floatSVGHeart ${Math.random() * 3 + 3}s ease-in-out infinite`;
+            
+            document.body.appendChild(fHeartSvg);
+            
+            setTimeout(() => {
+                fHeartSvg.remove();
+            }, 6000);
+        }
+
+        // 3. 主体动画控制流
+        async function runAnimation() {
+            // 第一阶段：铺满全屏
+            await new Promise(r => setTimeout(r, 100));
+            hearts.forEach(h => {
+                h.el.style.left = h.randomX + 'px';
+                h.el.style.top = h.randomY + 'px';
+                h.el.style.opacity = Math.random() * 0.7 + 0.3;
+                h.el.style.transform = `scale(${h.scale}) rotate(0deg)`; // SVG不需要像以前那样初始旋转
+            });
+
+            await new Promise(r => setTimeout(r, 2000));
+
+            // 第三阶段：汇聚成巨大的心形 (优化公式)
+            hearts.forEach((h, i) => {
+                const t = (i / heartCount) * Math.PI * 2;
+                // 适配屏幕
+                const r = window.innerWidth < 500 ? 12 : 21; 
+                
+                // 更饱满的立体爱心曲线公式
+                const targetX = centerX + r * (16 * Math.pow(Math.sin(t), 3));
+                const targetY = centerY - 60 - r * (13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t));
+
+                h.el.style.left = targetX + 'px';
+                h.el.style.top = targetY + 'px';
+                h.el.style.opacity = '1';
+                h.el.style.transform = `scale(1.3) rotate(0deg)`; // 合成时不需要倾斜
+                h.el.style.filter = 'drop-shadow(0 0 10px #ff4d6d)'; // 增强发光
+            });
+
+            // 主体合成后，开始源源不断生成飞舞SVG小爱心
+            await new Promise(r => setTimeout(r, 1000));
+            setInterval(createFloatingSVGHeart, 400); // 稍微放慢一点生成速度，避免SVG渲染过多导致卡顿
+
+            // 第四阶段：文字逐句显现
+            await new Promise(r => setTimeout(r, 1000));
+            document.getElementById('title').style.opacity = '1';
+            
+            const area = document.getElementById('typing-area');
+            for (let line of messages) {
+                const div = document.createElement('div');
+                div.className = 'text-line';
+                div.innerText = line;
+                area.appendChild(div);
+                await new Promise(r => setTimeout(r, 50));
+                div.style.opacity = '1';
+                await new Promise(r => setTimeout(r, 2000));
+            }
+        }
+
+        runAnimation();
+    </script>
+</body>
+</html>
